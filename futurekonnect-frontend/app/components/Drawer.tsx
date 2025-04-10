@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Drawer as MuiDrawer,
   List,
@@ -13,14 +13,21 @@ import {
   Tooltip,
   Button,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import FutureKonnectLogo from "./Logo";
 import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
 
 const Drawer = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [selectedItem, setSelectedItem] = useState("dashboard");
+
+  useEffect(() => {
+    // Update selected item based on current path
+    const currentPath = pathname.split('/')[1] || 'dashboard';
+    setSelectedItem(currentPath);
+  }, [pathname]);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", path: "/" },
@@ -33,7 +40,7 @@ const Drawer = () => {
       path: "/firewall_templates",
     },
     { id: "hotspot_users", label: "Hotspot Users", path: "/hotspot_users" },
-    { id: "audit_trail", label: "Audit Trail", path: "/audit-trail" },
+    { id: "audit_trail", label: "Audit Trail", path: "/audit_trail" },
     { id: "billing", label: "Billing", path: "/billing" },
     { id: "admins", label: "Admins", path: "/admins" },
   ];

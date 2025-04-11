@@ -10,11 +10,14 @@
     "watch": "tsc -w"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "@types/nodemailer": "^6.4.17",
     "apollo-server": "^3.12.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
     "pg": "^8.11.3",
     "resend": "^3.0.0",
     "uuid": "^9.0.1"

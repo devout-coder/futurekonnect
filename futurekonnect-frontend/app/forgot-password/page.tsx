@@ -2,17 +2,40 @@
 
 import { useState } from "react";
 import { Typography, Box } from "@mui/material";
+import { useMutation } from "@apollo/client";
+import { useRouter } from "next/navigation";
 import FormField from "@/app/components/FormField";
 import SubmitButton from "@/app/components/SubmitButton";
 import CustomCard from "@/app/components/CustomCard";
 import FutureKonnectLogo from "@/app/components/Logo";
+import { FORGOT_PASSWORD_MUTATION } from "@/lib/graphql/auth";
+import { authClient } from "@/lib/apollo-client";
+import { toast } from "react-toastify";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const [forgotPassword, { loading }] = useMutation(FORGOT_PASSWORD_MUTATION, {
+    client: authClient,
+    onCompleted: () => {
+      toast.success("Password reset email sent successfully!");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Password reset requested for:", { email });
+    try {
+      await forgotPassword({
+        variables: { email },
+      });
+    } catch (err) {
+      console.error(err);
+      // Error is handled by onError callback
+    }
   };
 
   return (
@@ -35,7 +58,7 @@ export default function ForgotPasswordPage() {
             autoComplete="email"
           />
           <Box sx={{ mt: 5.5 }}>
-            <SubmitButton label="RESET" />
+            <SubmitButton label="RESET" loading={loading} />
           </Box>
         </form>
       </CustomCard>

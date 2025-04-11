@@ -103,13 +103,14 @@ const resolvers = {
       );
 
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-      await resend.emails.send({
+      console.log("Reset URL:", resetUrl);
+      const val = await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: email,
         subject: 'Password Reset',
         html: `Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 1 hour.`,
       });
-
+      console.log("Email sent:", val);
       return true;
     },
 

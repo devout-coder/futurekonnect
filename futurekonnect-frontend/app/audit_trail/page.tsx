@@ -27,8 +27,23 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchIcon from '@mui/icons-material/Search';
+import { useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
+
+const GET_AUDIT_TRAIL = gql`
+  query GetAuditTrail($where: audit_trail_bool_exp) {
+    audit_trail(where: $where, order_by: {time: desc}) {
+      id
+      time
+      description
+      event
+      category
+      performed_by
+    }
+  }
+`;
 
 type ActionType = 'create' | 'delete' | 'update' | 'download';
 
@@ -38,86 +53,6 @@ interface Actions {
   update: boolean;
   download: boolean;
 }
-
-const auditTrailData = [
-  {
-    time: "11/02/24, 02:33 PM",
-    description: "Admin user Roshann Agarwal with the role Tenant Admin was created",
-    event: "Create",
-    category: "Admin",
-    performedBy: "Fletcher Fernandes"
-  },
-  {
-    time: "11/02/24, 01:52 PM",
-    description: "A firewall rule allowing traffic from IP addresses to be accepted was created.",
-    event: "Create",
-    category: "Firewall Rule",
-    performedBy: "Sachin Gowda"
-  },
-  {
-    time: "11/02/24, 01:23 PM",
-    description: "Certificate downloaded for router Tranquil Sea.",
-    event: "Download",
-    category: "Router Certificate",
-    performedBy: "Mukesh Sai Kumar"
-  },
-  {
-    time: "11/02/24, 01:11 PM",
-    description: "Hotspot user JohnDoe was deleted from router Mianzimu (HCQ083QNSNF).",
-    event: "Delete",
-    category: "Hotspot User",
-    performedBy: "Vishal Dubey"
-  },
-  {
-    time: "11/02/24, 01:01 PM",
-    description: "Firewall template Dualog was deleted",
-    event: "Delete",
-    category: "Firewall Template",
-    performedBy: "Vishal Dubey"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Update",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Create",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Create",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Create",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Create",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  },
-  {
-    time: "11/02/24, 12:58 PM",
-    description: "New router RUDRA23 (FF044QNSNF) was created",
-    event: "Create",
-    category: "Router",
-    performedBy: "Karan Sajnani"
-  }
-];
 
 export default function AuditTrail() {
   const [category, setCategory] = useState<string>('');
@@ -131,6 +66,7 @@ export default function AuditTrail() {
     update: false,
     download: false,
   });
+  const [searchUser, setSearchUser] = useState('');
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -141,18 +77,57 @@ export default function AuditTrail() {
     setPage(0);
   };
 
-  // Calculate the current page's data
-  const currentPageData = auditTrailData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
   const handleActionChange = (action: ActionType) => {
     setActions(prev => ({
       ...prev,
       [action]: !prev[action]
     }));
   };
+
+  // Build the where clause for the GraphQL query
+  const buildWhereClause = () => {
+    const where: any = {};
+
+    if (category) {
+      where.category = { _eq: category };
+    }
+
+    if (startDate || endDate) {
+      where.time = {};
+      if (startDate) {
+        where.time._gte = startDate.toISOString();
+      }
+      if (endDate) {
+        where.time._lte = endDate.toISOString();
+      }
+    }
+
+    if (searchUser) {
+      where.performed_by = { _ilike: `%${searchUser}%` };
+    }
+
+    const selectedActions = Object.entries(actions)
+      .filter(([_, value]) => value)
+      .map(([key]) => key);
+
+    if (selectedActions.length > 0) {
+      where.event = { _in: selectedActions };
+    }
+
+    return where;
+  };
+
+  const { data } = useQuery(GET_AUDIT_TRAIL, {
+    variables: {
+      where: buildWhereClause()
+    }
+  });
+
+  const auditTrailData = data?.audit_trail || [];
+  const currentPageData = auditTrailData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <Layout>
@@ -229,9 +204,12 @@ export default function AuditTrail() {
                     Select an option
                   </Typography>
                 </MenuItem>
-                <MenuItem value="tenant">Tenant</MenuItem>
-                <MenuItem value="fleet">Fleet</MenuItem>
-                <MenuItem value="router">Router</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="Firewall Rule">Firewall Rule</MenuItem>
+                <MenuItem value="Router Certificate">Router Certificate</MenuItem>
+                <MenuItem value="Hotspot User">Hotspot User</MenuItem>
+                <MenuItem value="Firewall Template">Firewall Template</MenuItem>
+                <MenuItem value="Router">Router</MenuItem>
               </Select>
             </FormControl>
 
@@ -348,6 +326,8 @@ export default function AuditTrail() {
               <TextField
                 fullWidth
                 placeholder="Search user"
+                value={searchUser}
+                onChange={(e) => setSearchUser(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -547,9 +527,9 @@ export default function AuditTrail() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentPageData.map((row, index) => (
+                    {currentPageData.map((row: any, index: number) => (
                       <TableRow
-                        key={index}
+                        key={row.id}
                         sx={{
                           backgroundColor: index % 2 === 0 ? "#4984B500" : "#172C43",
                           '& td': { border: 0 },
@@ -566,7 +546,7 @@ export default function AuditTrail() {
                           lineHeight: "24px",
                           letterSpacing: "0%",
                           paddingLeft: 3
-                        }}>{row.time}</TableCell>
+                        }}>{new Date(row.time).toLocaleString()}</TableCell>
                         <TableCell sx={{ 
                           color: 'white', 
                           fontFamily: "Montserrat",
@@ -602,7 +582,7 @@ export default function AuditTrail() {
                           lineHeight: "24px",
                           letterSpacing: "0%",
                           paddingLeft: 3
-                        }}>{row.performedBy}</TableCell>
+                        }}>{row.performed_by}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

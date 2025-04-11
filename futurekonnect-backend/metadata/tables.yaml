@@ -20,4 +20,25 @@
       definition:
         function: get_last_n_days
         table_argument: tenants
+  remote_relationships: []
+
+- table:
+    schema: public
+    name: audit_trail
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - time
+          - description
+          - event
+          - category
+          - performed_by
+          - created_at
+        filter: {}
+        allow_aggregations: true
+  array_relationships: []
+  object_relationships: []
+  computed_fields: []
   remote_relationships: [] 

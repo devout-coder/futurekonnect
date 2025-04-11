@@ -17,11 +17,13 @@ import { useRouter, usePathname } from "next/navigation";
 import FutureKonnectLogo from "./Logo";
 import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
+import { useAuth } from "../contexts/AuthContext";
 
 const Drawer = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [selectedItem, setSelectedItem] = useState("dashboard");
+  const { logout } = useAuth();
 
   useEffect(() => {
     // Update selected item based on current path
@@ -164,6 +166,7 @@ const Drawer = () => {
           </ListItem>
           <ListItem
             component="a"
+            onClick={() => logout()}
             sx={{
               "& .MuiTypography-root": {
                 fontFamily: "Montserrat",
@@ -171,7 +174,11 @@ const Drawer = () => {
                 fontSize: "18px",
                 lineHeight: "24px",
               },
-              marginBottom: '16px'
+              marginBottom: '16px',
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
             }}
           >
             <ListItemIcon>

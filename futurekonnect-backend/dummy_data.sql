@@ -20,4 +20,18 @@ INSERT INTO tenants (name, data_usage, date) VALUES
 ('Station Satcom', 66.7, CURRENT_DATE - 1),
 ('RUDRA', 27.2, CURRENT_DATE),
 ('Vashi Office', 39.1, CURRENT_DATE),
-('Station Satcom', 70.3, CURRENT_DATE); 
+('Station Satcom', 70.3, CURRENT_DATE);
+
+-- Insert dummy audit trail data
+INSERT INTO audit_trail (time, description, event, category, performed_by) VALUES
+('2024-02-11 14:33:00', 'Admin user Roshann Agarwal with the role Tenant Admin was created', 'create', 'Admin', 'Fletcher Fernandes'),
+('2024-02-11 13:52:00', 'A firewall rule allowing traffic from IP addresses to be accepted was created.', 'create', 'Firewall Rule', 'Sachin Gowda'),
+('2024-02-11 13:23:00', 'Certificate downloaded for router Tranquil Sea.', 'download', 'Router Certificate', 'Mukesh Sai Kumar'),
+('2024-02-11 13:11:00', 'Hotspot user JohnDoe was deleted from router Mianzimu (HCQ083QNSNF).', 'delete', 'Hotspot User', 'Vishal Dubey'),
+('2024-02-11 13:01:00', 'Firewall template Dualog was deleted', 'delete', 'Firewall Template', 'Vishal Dubey'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'),
+('2024-02-11 12:58:00', 'New router RUDRA23 (FF044QNSNF) was created', 'create', 'Router', 'Karan Sajnani'); 

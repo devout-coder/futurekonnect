@@ -50,4 +50,20 @@ RETURNS boolean AS $$
 BEGIN
     RETURN tenants.date >= (CURRENT_DATE - days);
 END;
-$$ LANGUAGE plpgsql STABLE; 
+$$ LANGUAGE plpgsql STABLE;
+
+CREATE TABLE IF NOT EXISTS audit_trail (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    time TIMESTAMP WITH TIME ZONE NOT NULL,
+    description TEXT NOT NULL,
+    event VARCHAR(50) NOT NULL CHECK (event IN ('create', 'delete', 'update', 'download')),
+    category VARCHAR(50) NOT NULL CHECK (category IN ('Admin', 'Firewall Rule', 'Router Certificate', 'Hotspot User', 'Firewall Template', 'Router')),
+    performed_by VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create an index on time for better query performance
+CREATE INDEX IF NOT EXISTS idx_audit_trail_time ON audit_trail(time);
+CREATE INDEX IF NOT EXISTS idx_audit_trail_event ON audit_trail(event);
+CREATE INDEX IF NOT EXISTS idx_audit_trail_category ON audit_trail(category);
+CREATE INDEX IF NOT EXISTS idx_audit_trail_performed_by ON audit_trail(performed_by); 

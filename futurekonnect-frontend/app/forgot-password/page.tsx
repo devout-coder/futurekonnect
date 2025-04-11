@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Typography, Box } from "@mui/material";
-import FormField from "@/components/FormField";
-import SubmitButton from "@/components/SubmitButton";
-import CustomCard from "@/components/CustomCard";
-import FutureKonnectLogo from "@/components/Logo";
+import FormField from "@/app/components/FormField";
+import SubmitButton from "@/app/components/SubmitButton";
+import CustomCard from "@/app/components/CustomCard";
+import FutureKonnectLogo from "@/app/components/Logo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
             label="Email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             autoComplete="email"
           />
           <Box sx={{ mt: 5.5 }}>

@@ -4,15 +4,17 @@ interface SubmitButtonProps {
   label: string;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
+  loading?: boolean;
 }
 
-export default function SubmitButton({ label, onClick, type = 'submit' }: SubmitButtonProps) {
+export default function SubmitButton({ label, onClick, type = 'submit', loading = false }: SubmitButtonProps) {
   return (
     <Button
       type={type}
       fullWidth
       variant="contained"
       onClick={onClick}
+      disabled={loading}
       sx={{ 
         background: 'linear-gradient(90deg, rgba(90, 147, 193, 0.64) 0%, rgba(35, 93, 140, 0.64) 94%)',
         textTransform: 'uppercase',
@@ -31,7 +33,7 @@ export default function SubmitButton({ label, onClick, type = 'submit' }: Submit
         verticalAlign: 'middle'
       }}
     >
-      {label}
+      {loading ? "Loading..." : label}
     </Button>
   );
 } 

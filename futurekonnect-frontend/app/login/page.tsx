@@ -10,6 +10,7 @@ import CustomCard from "@/app/components/CustomCard";
 import FutureKonnectLogo from "@/app/components/Logo";
 import { LOGIN_MUTATION } from "@/lib/graphql/auth";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { authClient } from "@/lib/apollo-client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, {
+    client: authClient,
     onCompleted: (data) => {
       login(data.login.token);
     },

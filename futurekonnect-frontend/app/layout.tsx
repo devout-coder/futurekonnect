@@ -2,7 +2,7 @@
 
 import { ApolloProvider } from '@apollo/client';
 import { AuthProvider } from './contexts/AuthContext';
-import { client } from '../lib/apollo-client';
+import { hasuraClient } from '../lib/apollo-client';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.variable} antialiased`}>
-        <ApolloProvider client={client}>
+        <ApolloProvider client={hasuraClient}>
           <AuthProvider>
             {children}
           </AuthProvider>

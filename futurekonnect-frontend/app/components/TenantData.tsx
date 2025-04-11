@@ -25,30 +25,52 @@ import {
   Area,
   ComposedChart,
 } from "recharts";
-
-const data = [
-  { date: "05 Mar", value: 1000 },
-  { date: "06 Mar", value: 1100 },
-  { date: "07 Mar", value: 1150 },
-  { date: "08 Mar", value: 1120 },
-  { date: "09 Mar", value: 1100 },
-  { date: "10 Mar", value: 1080 },
-  { date: "11 Mar", value: 600 },
-];
-
-const tenantData = [
-  { no: 1, name: "RUDRA", usage: "22.4 GB" },
-  { no: 2, name: "Vashi Office", usage: "34.5 GB" },
-  { no: 3, name: "Station Satcom", usage: "64.2 GB" },
-  { no: 4, name: "Station Satcom", usage: "64.2 GB" },
-  { no: 5, name: "Station Satcom", usage: "64.2 GB" },
-  { no: 6, name: "Station Satcom", usage: "64.2 GB" },
-  { no: 7, name: "Station Satcom", usage: "64.2 GB" },
-  { no: 8, name: "Station Satcom", usage: "64.2 GB" },
-  
-];
+import { useQuery } from '@apollo/client';
+import { GET_WEEKLY_DATA_USAGE, GET_TENANT_DATA_USAGE } from '../queries/tenantQueries';
+import { useState } from 'react';
+import { hasuraClient } from '../../lib/apollo-client';
 
 const TenantData = () => {
+  const [selectedDays, setSelectedDays] = useState(30);
+
+  // Calculate start date (7 days ago)
+  const getStartDate = (daysAgo: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString().split('T')[0];
+  };
+
+  const { data: weeklyData, loading: weeklyLoading } = useQuery(GET_WEEKLY_DATA_USAGE, {
+    variables: { startDate: getStartDate(7) },
+    client: hasuraClient
+  });
+  const { data: tenantData, loading: tenantLoading } = useQuery(GET_TENANT_DATA_USAGE, {
+    variables: { startDate: getStartDate(7) },
+    client: hasuraClient
+  });
+
+  // console.log('Tenant Data:', tenantData);
+  // console.log('Selected Days:', selectedDays);
+
+  const handleDaysChange = (event: any) => {
+    setSelectedDays(Number(event.target.value));
+  };
+
+  // Transform weekly data for the chart
+  const chartData = weeklyData?.tenants?.map((node: any) => ({
+    date: new Date(node.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+    value: node.data_usage
+  })) || [];
+
+  // Transform tenant data for the table
+  const tableData = tenantData?.tenants?.map((node: any, index: number) => ({
+    no: index + 1,
+    name: node.name,
+    usage: `${node.data_usage.toFixed(1)} GB`
+  })) || [];
+
+  console.log('Table Data:', tableData);
+
   return (
     <Box>
       <Box
@@ -74,7 +96,8 @@ const TenantData = () => {
           }}
         />
         <Select
-          defaultValue="30"
+          value={selectedDays}
+          onChange={handleDaysChange}
           IconComponent={() => (
             <Image
               src="/icons/up_down.svg"
@@ -93,9 +116,9 @@ const TenantData = () => {
             fontFamily: "Montserrat, sans-serif",
           }}
         >
-          <MenuItem value="30">Last 30 Days</MenuItem>
-          <MenuItem value="60">Last 60 Days</MenuItem>
-          <MenuItem value="90">Last 90 Days</MenuItem>
+          <MenuItem value={30}>Last 30 Days</MenuItem>
+          <MenuItem value={60}>Last 60 Days</MenuItem>
+          <MenuItem value={90}>Last 90 Days</MenuItem>
         </Select>
       </Box>
 
@@ -125,7 +148,7 @@ const TenantData = () => {
               }}
             >
               <ResponsiveContainer width="100%" height="85%">
-                <ComposedChart data={data}>
+                <ComposedChart data={chartData}>
                   <defs>
                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                       <stop
@@ -247,7 +270,7 @@ const TenantData = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {tenantData.map((tenant) => (
+                    {tableData.map((tenant: any) => (
                       <TableRow
                         key={tenant.no}
                         sx={{

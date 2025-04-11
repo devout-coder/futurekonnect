@@ -1,8 +1,9 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
-const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000',
+// Auth client for login/signup
+const authHttpLink = createHttpLink({
+  uri: process.env.NEXT_PUBLIC_AUTH_GRAPHQL_URL || 'http://localhost:4000',
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -18,7 +19,28 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
-export const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+export const authClient = new ApolloClient({
+  link: authLink.concat(authHttpLink),
+  cache: new InMemoryCache(),
+});
+
+// Hasura client for data queries
+const hasuraHttpLink = createHttpLink({
+  uri: process.env.NEXT_PUBLIC_HASURA_GRAPHQL_URL || 'http://localhost:8080/v1/graphql',
+});
+
+const hasuraLink = setContext((_, { headers }) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+      'x-hasura-admin-secret': process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET || '',
+    }
+  }
+});
+
+export const hasuraClient = new ApolloClient({
+  link: hasuraLink.concat(hasuraHttpLink),
   cache: new InMemoryCache(),
 }); 

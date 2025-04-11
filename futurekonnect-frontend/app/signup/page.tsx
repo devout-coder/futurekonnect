@@ -9,6 +9,7 @@ import CustomCard from "@/app/components/CustomCard";
 import FutureKonnectLogo from "@/app/components/Logo";
 import { SIGNUP_MUTATION } from "@/lib/graphql/auth";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { authClient } from "@/lib/apollo-client";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -18,6 +19,7 @@ export default function SignupPage() {
   const { login } = useAuth();
 
   const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION, {
+    client: authClient,
     onCompleted: (data) => {
       login(data.signup.token);
     },

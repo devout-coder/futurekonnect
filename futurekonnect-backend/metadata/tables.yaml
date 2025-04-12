@@ -41,4 +41,79 @@
   array_relationships: []
   object_relationships: []
   computed_fields: []
+  remote_relationships: []
+
+- table:
+    schema: public
+    name: data_exchanged
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - total_data
+          - date
+          - created_at
+          - updated_at
+        filter: {}
+        allow_aggregations: true
+  array_relationships: []
+  object_relationships: []
+  computed_fields: []
+  remote_relationships: []
+
+- table:
+    schema: public
+    name: fleets
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - name
+          - created_at
+          - updated_at
+        filter: {}
+        allow_aggregations: true
+  array_relationships: []
+  object_relationships: []
+  computed_fields: []
+  remote_relationships: []
+
+- table:
+    schema: public
+    name: hotspot_users
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - username
+          - is_active
+          - created_at
+          - updated_at
+        filter: {}
+        allow_aggregations: true
+  array_relationships: []
+  object_relationships: []
+  computed_fields: []
+  remote_relationships: []
+
+- table:
+    schema: public
+    name: routers
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - name
+          - is_online
+          - created_at
+          - updated_at
+        filter: {}
+        allow_aggregations: true
+  array_relationships: []
+  object_relationships: []
+  computed_fields: []
   remote_relationships: [] 

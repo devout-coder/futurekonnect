@@ -7,7 +7,7 @@ import FormField from "@/app/components/FormField";
 import SubmitButton from "@/app/components/SubmitButton";
 import CustomCard from "@/app/components/CustomCard";
 import FutureKonnectLogo from "@/app/components/Logo";
-import { SIGNUP_MUTATION } from "@/lib/graphql/auth";
+import { SIGNUP_MUTATION } from "../queries/authQueries";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { authClient } from "@/lib/apollo-client";
 

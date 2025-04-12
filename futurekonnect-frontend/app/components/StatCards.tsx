@@ -2,8 +2,40 @@
 
 import { Box } from "@mui/material";
 import StatCard from "./StatCard";
+import { useQuery } from "@apollo/client";
+import { GET_TOTAL_TENANTS } from "../queries/tenantQueries";
+import { GET_STATS } from "../queries/statsQueries";
+import { hasuraClient } from "../../lib/apollo-client";
 
 const StatCards = () => {
+  const { data: tenantsData, loading: tenantsLoading } = useQuery(
+    GET_TOTAL_TENANTS,
+    {
+      client: hasuraClient,
+    }
+  );
+
+  const {
+    data: statsData,
+    loading: statsLoading,
+    error,
+  } = useQuery(GET_STATS, {
+    client: hasuraClient,
+    fetchPolicy: "network-only",
+  });
+
+  const uniqueTenants = new Set(
+    tenantsData?.tenants?.map((tenant: any) => tenant.name) || []
+  ).size;
+  const totalData = statsData?.data_exchanged[0]?.total_data || 0;
+  const totalFleets = statsData?.fleets_aggregate?.aggregate?.count || 0;
+  const totalHotspotUsers =
+    statsData?.total_hotspot_users?.aggregate?.count || 0;
+  const activeHotspotUsers =
+    statsData?.active_hotspot_users?.aggregate?.count || 0;
+  const totalRouters = statsData?.total_routers?.aggregate?.count || 0;
+  const onlineRouters = statsData?.online_routers?.aggregate?.count || 0;
+
   return (
     <Box
       sx={{
@@ -20,7 +52,7 @@ const StatCards = () => {
         <StatCard
           iconSrc="/icons/data_exchanged.svg"
           label="TOTAL DATA EXCHANGED"
-          value="80.4 TB"
+          value={`${totalData} TB`}
           showArrow={false}
           iconWidth={50}
           iconHeight={50}
@@ -30,7 +62,7 @@ const StatCards = () => {
         <StatCard
           iconSrc="/icons/hotspot_users.svg"
           label="HOTSPOT USERS"
-          value="23K/24.2K"
+          value={`${activeHotspotUsers}/${totalHotspotUsers}`}
           iconWidth={54}
           iconHeight={40}
         />
@@ -39,7 +71,7 @@ const StatCards = () => {
         <StatCard
           iconSrc="/icons/routers.svg"
           label="ONLINE ROUTERS"
-          value="201/345"
+          value={`${onlineRouters}/${totalRouters}`}
           iconWidth={86}
           iconHeight={62}
         />
@@ -48,7 +80,7 @@ const StatCards = () => {
         <StatCard
           iconSrc="/icons/fleets.svg"
           label="FLEETS"
-          value="45"
+          value={totalFleets.toString()}
           iconWidth={59}
           iconHeight={45}
         />
@@ -57,7 +89,7 @@ const StatCards = () => {
         <StatCard
           iconSrc="/icons/tenants.svg"
           label="TENANTS"
-          value="23"
+          value={tenantsLoading ? "..." : uniqueTenants.toString()}
           iconWidth={40}
           iconHeight={40}
         />
@@ -66,4 +98,4 @@ const StatCards = () => {
   );
 };
 
-export default StatCards; 
+export default StatCards;

@@ -30,20 +30,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useState, useEffect } from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
-
-const GET_AUDIT_TRAIL = gql`
-  query GetAuditTrail($where: audit_trail_bool_exp) {
-    audit_trail(where: $where, order_by: {time: desc}) {
-      id
-      time
-      description
-      event
-      category
-      performed_by
-    }
-  }
-`;
+import { GET_AUDIT_TRAIL } from '../queries/auditQueries';
 
 type ActionType = 'create' | 'delete' | 'update' | 'download';
 

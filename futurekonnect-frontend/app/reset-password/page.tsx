@@ -8,7 +8,7 @@ import FormField from "@/app/components/FormField";
 import SubmitButton from "@/app/components/SubmitButton";
 import CustomCard from "@/app/components/CustomCard";
 import FutureKonnectLogo from "@/app/components/Logo";
-import { RESET_PASSWORD_MUTATION } from "@/lib/graphql/auth";
+import { RESET_PASSWORD_MUTATION } from "../queries/authQueries";
 import { authClient } from "@/lib/apollo-client";
 import { toast } from "react-toastify";
 

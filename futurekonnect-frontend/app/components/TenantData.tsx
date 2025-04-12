@@ -32,8 +32,8 @@ import { hasuraClient } from '../../lib/apollo-client';
 
 const TenantData = () => {
   const [selectedDays, setSelectedDays] = useState(30);
+  const [searchTerm, setSearchTerm] = useState('%%');
 
-  // Calculate start date (7 days ago)
   const getStartDate = (daysAgo: number) => {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
@@ -41,33 +41,76 @@ const TenantData = () => {
   };
 
   const { data: weeklyData, loading: weeklyLoading } = useQuery(GET_WEEKLY_DATA_USAGE, {
-    variables: { startDate: getStartDate(7) },
-    client: hasuraClient
-  });
-  const { data: tenantData, loading: tenantLoading } = useQuery(GET_TENANT_DATA_USAGE, {
-    variables: { startDate: getStartDate(7) },
+    variables: { 
+      startDate: getStartDate(selectedDays),
+      searchTerm: searchTerm
+    },
     client: hasuraClient
   });
 
-  // console.log('Tenant Data:', tenantData);
-  // console.log('Selected Days:', selectedDays);
+  const { data: tenantData, loading: tenantLoading } = useQuery(GET_TENANT_DATA_USAGE, {
+    variables: { 
+      startDate: getStartDate(selectedDays),
+      searchTerm: searchTerm
+    },
+    client: hasuraClient
+  });
 
   const handleDaysChange = (event: any) => {
     setSelectedDays(Number(event.target.value));
   };
 
-  // Transform weekly data for the chart
-  const chartData = weeklyData?.tenants?.map((node: any) => ({
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchTerm(value ? `%${value}%` : '%%');
+  };
+
+  const chartData = weeklyData?.tenants?.reduce((acc: any[], curr: any) => {
+    const existingDate = acc.find(item => item.date === curr.date);
+    if (existingDate) {
+      existingDate.value += curr.data_usage;
+      if (!existingDate.tenants) {
+        existingDate.tenants = [];
+      }
+      existingDate.tenants.push({
+        name: curr.name,
+        usage: curr.data_usage
+      });
+    } else {
+      acc.push({
+        date: curr.date,
+        value: curr.data_usage,
+        tenants: [{
+          name: curr.name,
+          usage: curr.data_usage
+        }]
+      });
+    }
+    return acc;
+  }, [])?.map((node: any) => ({
     date: new Date(node.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-    value: node.data_usage
+    value: node.value,
+    tenants: node.tenants
   })) || [];
 
-  // Transform tenant data for the table
-  const tableData = tenantData?.tenants?.map((node: any, index: number) => ({
-    no: index + 1,
-    name: node.name,
-    usage: `${node.data_usage.toFixed(1)} GB`
-  })) || [];
+  const tableData = tenantData?.tenants?.reduce((acc: any[], curr: any) => {
+    const existingTenant = acc.find(item => item.name === curr.name);
+    if (existingTenant) {
+      existingTenant.usage += curr.data_usage;
+    } else {
+      acc.push({
+        name: curr.name,
+        usage: curr.data_usage
+      });
+    }
+    return acc;
+  }, [])
+    ?.sort((a: any, b: any) => b.usage - a.usage)
+    ?.map((node: any, index: number) => ({
+      no: index + 1,
+      name: node.name,
+      usage: `${node.usage.toFixed(1)} GB`
+    })) || [];
 
   console.log('Table Data:', tableData);
 
@@ -84,6 +127,7 @@ const TenantData = () => {
         <TextField
           variant="outlined"
           placeholder="Search for Tenant"
+          onChange={handleSearchChange}
           InputProps={{
             startAdornment: (
               <SearchIcon style={{ color: "white", marginRight: "5px" }} />
@@ -116,6 +160,7 @@ const TenantData = () => {
             fontFamily: "Montserrat, sans-serif",
           }}
         >
+          <MenuItem value={7}>Last 7 Days</MenuItem>
           <MenuItem value={30}>Last 30 Days</MenuItem>
           <MenuItem value={60}>Last 60 Days</MenuItem>
           <MenuItem value={90}>Last 90 Days</MenuItem>

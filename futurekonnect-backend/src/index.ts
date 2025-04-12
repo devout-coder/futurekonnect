@@ -27,6 +27,7 @@ const typeDefs = `
 
   type Query {
     me: User
+    users: [User!]!
   }
 
   type Mutation {
@@ -55,6 +56,21 @@ const resolvers = {
         createdAt: user.created_at,
         updatedAt: user.updated_at
       };
+    },
+    users: async (_: any, __: any, context: Context) => {
+      if (!context.userId) {
+        throw new Error('Not authenticated');
+      }
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('*');
+      
+      if (error) throw error;
+      return users.map(user => ({
+        ...user,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+      }));
     },
   },
   Mutation: {

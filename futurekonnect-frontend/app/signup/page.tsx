@@ -70,6 +70,7 @@ export default function SignupPage() {
           <FormField
             label="Name"
             type="text"
+            name="name"
             value={name}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             autoComplete="name"
@@ -77,6 +78,7 @@ export default function SignupPage() {
           <FormField
             label="Email"
             type="email"
+            name="email"
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             autoComplete="email"
@@ -84,6 +86,7 @@ export default function SignupPage() {
           <FormField
             label="Password"
             type="password"
+            name="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             autoComplete="new-password"

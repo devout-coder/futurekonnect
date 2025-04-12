@@ -52,6 +52,7 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit}>
           <FormField
             label="Email"
+            name="email"
             type="email"
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}

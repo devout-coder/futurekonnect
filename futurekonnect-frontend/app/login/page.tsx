@@ -62,6 +62,7 @@ export default function LoginPage() {
           <FormField
             label="Email"
             type="email"
+            name="email"
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             autoComplete="email"
@@ -69,6 +70,7 @@ export default function LoginPage() {
           <FormField
             label="Password"
             type="password"
+            name="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             autoComplete="current-password"

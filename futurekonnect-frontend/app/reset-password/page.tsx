@@ -92,6 +92,7 @@ export default function ResetPasswordPage() {
         <form onSubmit={handleSubmit}>
           <FormField
             label="New Password"
+            name="password"
             type="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
@@ -99,6 +100,7 @@ export default function ResetPasswordPage() {
           />
           <FormField
             label="Confirm Password"
+            name="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}

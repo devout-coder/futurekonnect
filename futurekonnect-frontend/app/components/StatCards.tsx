@@ -39,61 +39,53 @@ const StatCards = () => {
   return (
     <Box
       sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "1fr",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(3, 1fr)",
-        },
-        gap: 2,
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 5,
+        width: "100%",
+        justifyContent: "flex-start",
       }}
     >
-      <Box>
-        <StatCard
-          iconSrc="/icons/data_exchanged.svg"
-          label="TOTAL DATA EXCHANGED"
-          value={`${totalData} TB`}
-          showArrow={false}
-          iconWidth={50}
-          iconHeight={50}
-        />
-      </Box>
-      <Box>
-        <StatCard
-          iconSrc="/icons/hotspot_users.svg"
-          label="HOTSPOT USERS"
-          value={`${activeHotspotUsers}/${totalHotspotUsers}`}
-          iconWidth={54}
-          iconHeight={40}
-        />
-      </Box>
-      <Box>
-        <StatCard
-          iconSrc="/icons/routers.svg"
-          label="ONLINE ROUTERS"
-          value={`${onlineRouters}/${totalRouters}`}
-          iconWidth={86}
-          iconHeight={62}
-        />
-      </Box>
-      <Box>
-        <StatCard
-          iconSrc="/icons/fleets.svg"
-          label="FLEETS"
-          value={totalFleets.toString()}
-          iconWidth={59}
-          iconHeight={45}
-        />
-      </Box>
-      <Box>
-        <StatCard
-          iconSrc="/icons/tenants.svg"
-          label="TENANTS"
-          value={tenantsLoading ? "..." : uniqueTenants.toString()}
-          iconWidth={40}
-          iconHeight={40}
-        />
-      </Box>
+      <StatCard
+        iconSrc="/icons/data_exchanged.svg"
+        label="TOTAL DATA EXCHANGED"
+        value={`${totalData} TB`}
+        showArrow={false}
+        iconWidth={50}
+        iconHeight={50}
+      />
+      <StatCard
+        iconSrc="/icons/hotspot_users.svg"
+        label="HOTSPOT USERS"
+        value={`${activeHotspotUsers}/${totalHotspotUsers}`}
+        iconWidth={54}
+        iconHeight={40}
+        path="/hotspot_users"
+      />
+      <StatCard
+        iconSrc="/icons/routers.svg"
+        label="ONLINE ROUTERS"
+        value={`${onlineRouters}/${totalRouters}`}
+        iconWidth={86}
+        iconHeight={62}
+        path="/routers"
+      />
+      <StatCard
+        iconSrc="/icons/fleets.svg"
+        label="FLEETS"
+        value={totalFleets.toString()}
+        iconWidth={59}
+        iconHeight={45}
+        path="/fleets"
+      />
+      <StatCard
+        iconSrc="/icons/tenants.svg"
+        label="TENANTS"
+        value={tenantsLoading ? "..." : uniqueTenants.toString()}
+        iconWidth={40}
+        iconHeight={40}
+        path="/tenants"
+      />
     </Box>
   );
 };

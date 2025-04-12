@@ -12,6 +12,8 @@ import {
   Avatar,
   Tooltip,
   Button,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useRouter, usePathname } from "next/navigation";
 import FutureKonnectLogo from "./Logo";
@@ -23,13 +25,23 @@ const Drawer = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [selectedItem, setSelectedItem] = useState("dashboard");
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { logout } = useAuth();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     // Update selected item based on current path
     const currentPath = pathname.split('/')[1] || 'dashboard';
     setSelectedItem(currentPath);
-  }, [pathname]);
+    
+    // Set initial collapse state based on route and screen size
+    if (isSmallScreen) {
+      setIsCollapsed(true);
+    } else {
+      setIsCollapsed(pathname !== '/');
+    }
+  }, [pathname, isSmallScreen]);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", path: "/" },
@@ -52,6 +64,10 @@ const Drawer = () => {
     router.push(path);
   };
 
+  const toggleDrawer = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <MuiDrawer
       variant="permanent"
@@ -60,32 +76,77 @@ const Drawer = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           position: 'relative',
-          width: 'fit-content',
+          minHeight: '100vh',
+          height: '100%',
+          width: isCollapsed ? '80px' : '240px',
           boxSizing: 'border-box',
           borderRight: "none",
-          overflow: "hidden",
           backgroundColor: "#1a2a3a",
           color: "#fff",
+          transition: 'width 0.3s ease-in-out',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          '&::-webkit-scrollbar': {
+            width: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#1a2a3a',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#4DABF7',
+            borderRadius: '4px',
+          },
         },
       }}
     >
       <div
         style={{
-          height: "100vh",
+          minHeight: '100%',
           display: "flex",
           flexDirection: "column",
-          width: '100%'
+          width: '100%',
+          transition: 'all 0.3s ease-in-out',
+          position: 'relative'
         }}
       >
-        <div style={{ padding: "16px", width: "100%" }}>
-          <FutureKonnectLogo
-            width={200}
-            height={40}
-            marginBottom={3}
-            marginTop={2}
-          />
+        <div 
+          style={{ 
+            padding: "16px", 
+            width: "100%",
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            transition: 'all 0.3s ease-in-out'
+          }}
+          onClick={toggleDrawer}
+        >
+          {isCollapsed ? (
+            <Image
+              src="/images/fk_logo_small.png"
+              alt="FutureKonnect Logo"
+              width={24}
+              height={24}
+              priority
+              style={{ transition: 'all 0.3s ease-in-out' }}
+            />
+          ) : (
+            <FutureKonnectLogo
+              width={200}
+              height={40}
+              marginBottom={3}
+              marginTop={2}
+            />
+          )}
         </div>
-        <List style={{ flex: 1, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <List style={{ 
+          flex: 1, 
+          width: "100%", 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: isCollapsed ? "center" : "flex-start",
+          transition: 'all 0.3s ease-in-out'
+        }}>
           {menuItems.map((item) => (
             <ListItem
               key={item.id}
@@ -96,14 +157,21 @@ const Drawer = () => {
                   selectedItem === item.id ? "#4DABF7" : "transparent",
                 cursor: "pointer",
                 margin: "4px 0",
+                width: isCollapsed ? '100%' : '100%',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                transition: 'all 0.3s ease-in-out',
                 "& .MuiListItemIcon-root": {
                   minWidth: "40px",
+                  display: 'flex',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
                 },
                 "& .MuiTypography-root": {
                   fontFamily: "Montserrat",
                   fontWeight: 500,
                   fontSize: "18px",
                   lineHeight: "24px",
+                  display: isCollapsed ? 'none' : 'block',
+                  transition: 'all 0.3s ease-in-out',
                 },
               }}
             >
@@ -113,7 +181,7 @@ const Drawer = () => {
                   alt={`${item.label} icon`}
                   width={24}
                   height={24}
-                  style={{ filter: "brightness(0) invert(1)" }}
+                  style={{ filter: "brightness(0) invert(1)", transition: 'all 0.3s ease-in-out' }}
                 />
               </ListItemIcon>
               <ListItemText primary={item.label} />
@@ -134,14 +202,35 @@ const Drawer = () => {
             letterSpacing: "0px",
             textAlign: "center",
             verticalAlign: "middle",
-            padding: "8px 16px",
-            mb: 5
+            padding: isCollapsed ? "8px" : "8px 16px",
+            mb: 5,
+            width: isCollapsed ? 'auto' : 'calc(100% - 32px)',
+            justifyContent: isCollapsed ? 'center' : 'center',
+            minWidth: isCollapsed ? 'auto' : 'unset',
+            transition: 'all 0.3s ease-in-out',
+            '& .MuiButton-startIcon': {
+              margin: isCollapsed ? 0 : '0 8px 0 0',
+              transition: 'all 0.3s ease-in-out',
+            },
+            '& .MuiButton-label': {
+              display: isCollapsed ? 'none' : 'block',
+              transition: 'all 0.3s ease-in-out',
+            }
           }}
         >
-          Create
+          {!isCollapsed && "Create"}
         </Button>
-        <Divider sx={{ width: '80%', margin: '0 auto', borderColor: '#C7BCBC' , mb: 3}} />
-        <List sx={{ width: "100%" }}>
+        <Divider sx={{ 
+          width: '80%', 
+          margin: '0 auto', 
+          borderColor: '#C7BCBC', 
+          mb: 3,
+          transition: 'all 0.3s ease-in-out'
+        }} />
+        <List sx={{ 
+          width: "100%",
+          transition: 'all 0.3s ease-in-out'
+        }}>
           <ListItem
             component="a"
             sx={{
@@ -150,6 +239,15 @@ const Drawer = () => {
                 fontWeight: 500,
                 fontSize: "18px",
                 lineHeight: "24px",
+                display: isCollapsed ? 'none' : 'block',
+                transition: 'all 0.3s ease-in-out',
+              },
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
+              transition: 'all 0.3s ease-in-out',
+              "& .MuiListItemIcon-root": {
+                minWidth: "40px",
+                display: 'flex',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
               },
             }}
           >
@@ -159,7 +257,7 @@ const Drawer = () => {
                 alt="Account icon"
                 width={24}
                 height={24}
-                style={{ filter: "brightness(0) invert(1)" }}
+                style={{ filter: "brightness(0) invert(1)", transition: 'all 0.3s ease-in-out' }}
               />
             </ListItemIcon>
             <ListItemText primary="Account" />
@@ -173,9 +271,18 @@ const Drawer = () => {
                 fontWeight: 500,
                 fontSize: "18px",
                 lineHeight: "24px",
+                display: isCollapsed ? 'none' : 'block',
+                transition: 'all 0.3s ease-in-out',
               },
               marginBottom: '16px',
               cursor: 'pointer',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
+              transition: 'all 0.3s ease-in-out',
+              "& .MuiListItemIcon-root": {
+                minWidth: "40px",
+                display: 'flex',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+              },
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
               }
@@ -187,7 +294,7 @@ const Drawer = () => {
                 alt="Logout icon"
                 width={24}
                 height={24}
-                style={{ filter: "brightness(0) invert(1)" }}
+                style={{ filter: "brightness(0) invert(1)", transition: 'all 0.3s ease-in-out' }}
               />
             </ListItemIcon>
             <ListItemText primary="Log Out" />

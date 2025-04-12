@@ -173,13 +173,26 @@ const TenantData = () => {
           borderRadius: "16px",
           padding: "24px",
           mt: 2,
+          overflowX: 'auto',
+          '&::-webkit-scrollbar': {
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#172C43',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#4DA6FF',
+            borderRadius: '4px',
+          },
         }}
       >
         <Box
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "1.5fr 1fr" },
-            gap: 18,
+            gap: { xs: 4, md: 18 },
+            minWidth: { xs: "800px", md: "auto" },
           }}
         >
           {/* Graph Section */}
@@ -187,7 +200,7 @@ const TenantData = () => {
             <Card
               sx={{
                 backgroundColor: "transparent",
-                height: "400px",
+                height: { xs: "300px", md: "400px" },
                 p: 2,
                 boxShadow: 'none'
               }}
@@ -271,7 +284,7 @@ const TenantData = () => {
             <Card
               sx={{
                 backgroundColor: "transparent",
-                height: "400px",
+                height: { xs: "300px", md: "400px" },
                 p: 2,
                 display: 'flex',
                 flexDirection: 'column',

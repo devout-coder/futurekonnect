@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent, Typography, Box, IconButton } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface StatCardProps {
   iconSrc: string;
@@ -10,6 +11,7 @@ interface StatCardProps {
   showArrow?: boolean;
   iconWidth?: number;
   iconHeight?: number;
+  path?: string;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -19,20 +21,41 @@ const StatCard: React.FC<StatCardProps> = ({
   showArrow = true,
   iconWidth = 32,
   iconHeight = 32,
+  path,
 }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (path) {
+      router.push(path);
+    }
+  };
+
   return (
     <Card
+      onClick={handleClick}
       sx={{
         backgroundColor: "#4984B5",
         color: "#fff",
         borderRadius: 2,
         height: "115px",
-        display: "inline-block",
-        width: "auto",
-        minWidth: "200px"
+        display: "inline-flex",
+        width: "fit-content",
+        minWidth: "200px",
+        cursor: path ? "pointer" : "default",
+        "&:hover": {
+          backgroundColor: path ? "#3a6a8f" : "#4984B5",
+        },
+        transition: "background-color 0.2s ease-in-out",
       }}
     >
-      <CardContent sx={{ height: "100%", padding: "16px 25px" }}>
+      <CardContent sx={{ 
+        height: "100%", 
+        padding: "16px 25px",
+        display: "flex",
+        alignItems: "center",
+        width: "100%"
+      }}>
         <Box
           sx={{
             display: "grid",
@@ -42,13 +65,17 @@ const StatCard: React.FC<StatCardProps> = ({
             height: "100%",
           }}
         >
-          <Box>
+          <Box sx={{ minWidth: iconWidth }}>
             <Image
               src={iconSrc}
               alt={`${label} icon`}
               width={iconWidth}
               height={iconHeight}
-              style={{ objectFit: "contain" }}
+              style={{ 
+                objectFit: "contain",
+                minWidth: iconWidth,
+                minHeight: iconHeight
+              }}
             />
           </Box>
           <Box>

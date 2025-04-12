@@ -1,7 +1,11 @@
 import { Box, Typography, Divider } from '@mui/material';
 import Image from 'next/image';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const TopBar = () => {
+  const { user } = useAuth();
+  const defaultImage = "https://picsum.photos/536/354";
+
   return (
     <Box sx={{ 
       display: 'flex',
@@ -28,11 +32,11 @@ const TopBar = () => {
             color: '#ffffff'
           }}
         >
-         Awesome 
+          {user?.username || 'User'}
         </Typography>
         <Image
-          src="https://picsum.photos/536/354"
-          alt="Network"
+          src={user?.imageUrl || defaultImage}
+          alt="Profile"
           width={40}
           height={40}
           style={{ borderRadius: '50%' }}

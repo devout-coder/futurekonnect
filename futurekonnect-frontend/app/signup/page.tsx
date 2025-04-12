@@ -21,9 +21,11 @@ export default function SignupPage() {
   const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION, {
     client: authClient,
     onCompleted: (data) => {
-      login(data.signup.token);
+      console.log('Signup completed:', data);
+      login(data.signup.token, data.signup.user);
     },
     onError: (error) => {
+      console.error('Signup error:', error);
       setError(error.message);
     },
   });
@@ -31,11 +33,20 @@ export default function SignupPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+    const variables = {
+      email,
+      password,
+      username: name,
+      imageUrl: null
+    };
+    console.log('Attempting signup with:', variables);
     try {
       await signupMutation({
-        variables: { email, password },
+        variables,
       });
     } catch (err) {
+      console.error('Signup error:', err);
+      // Error is handled by onError callback
     }
   };
 

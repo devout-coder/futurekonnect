@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, {
     client: authClient,
     onCompleted: (data) => {
-      login(data.login.token);
+      login(data.login.token, data.login.user);
     },
     onError: (error) => {
       setError(error.message);

@@ -1,24 +1,21 @@
 import { ApolloServer } from 'apollo-server';
-import { Pool } from 'pg';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { User, AuthPayload, Context } from './types';
 
 dotenv.config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
 
 const typeDefs = `
   type User {
     id: ID!
     email: String!
+    username: String!
+    imageUrl: String
     createdAt: String!
     updatedAt: String!
   }
@@ -33,7 +30,7 @@ const typeDefs = `
   }
 
   type Mutation {
-    signup(email: String!, password: String!): AuthPayload!
+    signup(email: String!, password: String!, username: String!, imageUrl: String): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
     forgotPassword(email: String!): Boolean!
     resetPassword(token: String!, newPassword: String!): Boolean!
@@ -46,92 +43,114 @@ const resolvers = {
       if (!context.userId) {
         throw new Error('Not authenticated');
       }
-      const result = await pool.query<User>('SELECT * FROM users WHERE id = $1', [context.userId]);
-      return result.rows[0];
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', context.userId)
+        .single();
+      
+      if (error) throw error;
+      return {
+        ...user,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+      };
     },
   },
   Mutation: {
-    signup: async (_: any, { email, password }: { email: string; password: string }): Promise<AuthPayload> => {
+    signup: async (_: any, { email, password, username, imageUrl }: { email: string; password: string; username: string; imageUrl?: string }): Promise<AuthPayload> => {
+      console.log('Signup attempt with:', { email, password, username, imageUrl });
+      
       try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query<User>(
-          'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *',
-          [email, hashedPassword]
-        );
-        const user = result.rows[0];
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!);
-        return { token, user };
-      } catch (error: any) {
-        if (error.code === '23505') {
-          throw new Error('Email already exists');
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username,
+              imageUrl: imageUrl || null
+            }
+          }
+        });
+
+        console.log('Supabase response:', { data, error });
+
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
         }
+        if (!data.user) {
+          console.error('No user data received');
+          throw new Error('Failed to create user');
+        }
+
+        const token = data.session?.access_token;
+        if (!token) {
+          console.error('No session token received');
+          throw new Error('Failed to generate token');
+        }
+
+        const userData = {
+          id: data.user.id,
+          email: data.user.email!,
+          username: data.user.user_metadata?.username || username,
+          imageUrl: data.user.user_metadata?.imageUrl || null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        console.log('Returning user data:', userData);
+
+        return { 
+          token, 
+          user: userData
+        };
+      } catch (error) {
+        console.error('Signup error:', error);
         throw error;
       }
     },
 
     login: async (_: any, { email, password }: { email: string; password: string }): Promise<AuthPayload> => {
-      const result = await pool.query<User>('SELECT * FROM users WHERE email = $1', [email]);
-      const user = result.rows[0];
-      
-      if (!user) {
-        throw new Error('Invalid email or password');
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      const valid = await bcrypt.compare(password, user.password);
-      if (!valid) {
-        throw new Error('Invalid email or password');
-      }
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!);
-      return { token, user };
+      if (error) throw error;
+      if (!data.user) throw new Error('Invalid email or password');
+
+      const token = data.session?.access_token;
+      if (!token) throw new Error('Failed to generate token');
+
+      return { 
+        token, 
+        user: {
+          id: data.user.id,
+          email: data.user.email!,
+          username: data.user.user_metadata?.username || '',
+          imageUrl: data.user.user_metadata?.imageUrl || null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      };
     },
 
     forgotPassword: async (_: any, { email }: { email: string }): Promise<boolean> => {
-      const result = await pool.query<User>('SELECT * FROM users WHERE email = $1', [email]);
-      const user = result.rows[0];
-      
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const token = uuidv4();
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1);
-
-      await pool.query(
-        'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
-        [user.id, token, expiresAt]
-      );
-
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-      console.log("Reset URL:", resetUrl);
-      const val = await resend.emails.send({
-        from: 'onboarding@resend.dev',
-        to: email,
-        subject: 'Password Reset',
-        html: `Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 1 hour.`,
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
       });
-      console.log("Email sent:", val);
+
+      if (error) throw error;
       return true;
     },
 
     resetPassword: async (_: any, { token, newPassword }: { token: string; newPassword: string }): Promise<boolean> => {
-      const result = await pool.query(
-        'SELECT * FROM password_reset_tokens WHERE token = $1 AND expires_at > NOW()',
-        [token]
-      );
-      const resetToken = result.rows[0];
-      
-      if (!resetToken) {
-        throw new Error('Invalid or expired token');
-      }
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await pool.query('UPDATE users SET password = $1 WHERE id = $2', [
-        hashedPassword,
-        resetToken.user_id,
-      ]);
-
-      await pool.query('DELETE FROM password_reset_tokens WHERE id = $1', [resetToken.id]);
+      if (error) throw error;
       return true;
     },
   },
@@ -140,11 +159,12 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }): Context => {
+  context: async ({ req }): Promise<Context> => {
     const token = req.headers.authorization || '';
     try {
-      const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET!) as { userId: string };
-      return { userId: decoded.userId };
+      const { data: { user }, error } = await supabase.auth.getUser(token.replace('Bearer ', ''));
+      if (error) throw error;
+      return { userId: user?.id };
     } catch (error) {
       return {};
     }

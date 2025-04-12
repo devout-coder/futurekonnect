@@ -1,9 +1,10 @@
 export interface User {
   id: string;
   email: string;
-  password: string;
-  created_at: Date;
-  updated_at: Date;
+  username: string;
+  imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PasswordResetToken {
@@ -16,7 +17,7 @@ export interface PasswordResetToken {
 
 export interface AuthPayload {
   token: string;
-  user: Omit<User, 'password'>;
+  user: User;
 }
 
 export interface Context {

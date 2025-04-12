@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Typography, Box } from "@mui/material";
 import { useMutation } from "@apollo/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import FormField from "@/app/components/FormField";
 import SubmitButton from "@/app/components/SubmitButton";
 import CustomCard from "@/app/components/CustomCard";
@@ -15,9 +15,17 @@ import { toast } from "react-toastify";
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get("access_token");
+      setToken(accessToken);
+    }
+  }, []);
 
   const [resetPassword, { loading }] = useMutation(RESET_PASSWORD_MUTATION, {
     client: authClient,

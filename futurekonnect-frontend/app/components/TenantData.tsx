@@ -112,7 +112,6 @@ const TenantData = () => {
       usage: `${node.usage.toFixed(1)} GB`
     })) || [];
 
-  console.log('Table Data:', tableData);
 
   return (
     <Box>

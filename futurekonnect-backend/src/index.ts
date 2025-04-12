@@ -2,6 +2,7 @@ import { ApolloServer } from 'apollo-server';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { User, AuthPayload, Context } from './types';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -175,6 +176,10 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+  },
   context: async ({ req }): Promise<Context> => {
     const token = req.headers.authorization || '';
     try {

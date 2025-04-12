@@ -4,6 +4,7 @@ import { setContext } from '@apollo/client/link/context';
 // Auth client for login/signup
 const authHttpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_AUTH_GRAPHQL_URL || 'http://localhost:4000',
+  credentials: 'include',
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -22,11 +23,13 @@ const authLink = setContext((_, { headers }) => {
 export const authClient = new ApolloClient({
   link: authLink.concat(authHttpLink),
   cache: new InMemoryCache(),
+  credentials: 'include',
 });
 
 // Hasura client for data queries
 const hasuraHttpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_HASURA_GRAPHQL_URL || 'http://localhost:8080/v1/graphql',
+  credentials: 'include',
 });
 
 const hasuraLink = setContext((_, { headers }) => {
@@ -43,4 +46,5 @@ const hasuraLink = setContext((_, { headers }) => {
 export const hasuraClient = new ApolloClient({
   link: hasuraLink.concat(hasuraHttpLink),
   cache: new InMemoryCache(),
+  credentials: 'include',
 }); 

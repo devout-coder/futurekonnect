@@ -1,9 +1,12 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Auth client for login/signup
 const authHttpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_AUTH_GRAPHQL_URL || 'http://localhost:4000',
+  uri: process.env.NEXT_PUBLIC_AUTH_GRAPHQL_URL || 'http://localhost:4000/',
   credentials: 'include',
 });
 

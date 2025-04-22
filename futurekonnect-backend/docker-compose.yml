@@ -39,11 +39,14 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - FRONTEND_URL=${FRONTEND_URL}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     depends_on:
       - postgres
     volumes:
       - .:/app
-      - /app/node_modules
+      - /app/node_modules # volume mask
     command: sh -c "npm install && npm run dev"
 
 volumes:

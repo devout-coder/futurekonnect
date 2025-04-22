@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<{ accessToken: string | null; refreshToken: string | null } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +23,8 @@ export default function ResetPasswordPage() {
     if (hash) {
       const params = new URLSearchParams(hash.substring(1));
       const accessToken = params.get("access_token");
-      setToken(accessToken);
+      const refreshToken = params.get("refresh_token");
+      setToken({ accessToken, refreshToken });
     }
   }, []);
 
@@ -40,7 +41,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!token) {
+    if (!token?.accessToken || !token?.refreshToken) {
       toast.error("Invalid reset link");
       return;
     }
@@ -50,7 +51,11 @@ export default function ResetPasswordPage() {
     }
     try {
       await resetPassword({
-        variables: { token, newPassword: password },
+        variables: { 
+          token: token.accessToken,
+          refreshToken: token.refreshToken,
+          newPassword: password 
+        },
       });
     } catch (err) {
       console.error(err);

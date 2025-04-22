@@ -22,6 +22,6 @@ export const typeDefs = `
     signup(email: String!, password: String!, username: String!, imageUrl: String): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
     forgotPassword(email: String!): Boolean!
-    resetPassword(token: String!, newPassword: String!): Boolean!
+    resetPassword(token: String!, refreshToken: String!, newPassword: String!): Boolean!
   }
 `; 
